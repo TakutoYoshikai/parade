@@ -2,22 +2,30 @@ from lina import lina
 from PIL import Image
 import argparse
 
-def write_data(data_binary, outputpath):
-    splited = lina.split(data_binary)
-    result = bytes(splited)
-    f = open(outputpath, "wb")
-    f.write(result)
+DELIMETER = "#|#|#|#"
 
-def decode(imagepath, keypath, size, outputpath):
+def write_data(data, outputpath):
+    f = open(outputpath, "wb")
+    f.write(data)
+
+def capacity_of_image(image):
+    width, height = image.size
+    len_del = len(bytearray(DELIMETER.encode()))
+    return width * height * 3 - len_del
+
+def decode(imagepath, keypath, outputpath):
     image = Image.open(imagepath)
     key_image = Image.open(keypath)
+    delimeter = DELIMETER.encode()
+    delimeter = lina.message_to_binary(delimeter)
+    delimeter = "".join(delimeter)
     width, height = image.size
     k_width, k_height = key_image.size
     if width != k_width or height != k_height:
         print("size is different")
         return
     data_binary = ""
-    d = 0
+    buf = ""
     for row in range(height):
         for col in range(width):
             pixel = image.getpixel((col, row))
@@ -31,25 +39,32 @@ def decode(imagepath, keypath, size, outputpath):
                 byte = lina.message_to_binary(color)
                 k_byte = lina.message_to_binary(k_color)
                 for j in range(8):
+                    if len(buf) == len(delimeter):
+                        buf = buf[1:len(delimeter)]
                     if (byte[j] == "1" and k_byte[j] == "0") or (byte[j] == "0" and k_byte[j] == "1"):
+                        buf += "1"
                         data_binary += "1"
                     else:
+                        buf += "0"
                         data_binary += "0"
-                    d += 1
-                if d / 8 >= size:
-                    write_data(data_binary, outputpath)
+                if buf == delimeter:
+                    image.close()
+                    write_data(lina.cut_bytes(lina.split(data_binary)), outputpath)
                     return
-    write_data(data_binary, outputpath)
+    image.close()
+    write_data(lina.cut_bytes(lina.split(data_binary)), outputpath)
 
 def generate_key(imagepath, filepath, outputpath):
     f = open(filepath, "rb")
     data = f.read()
+    delimeter = DELIMETER.encode()
     binary_content = lina.message_to_binary(data)
-    binary = "".join(binary_content)
+    binary_delimeter = lina.message_to_binary(delimeter)
+    binary = "".join(binary_content) + "".join(binary_delimeter)
     image = Image.open(imagepath)
     key_image = image.copy()
     width, height = image.size
-    capacity = width * height * 3 * 8
+    capacity = capacity_of_image(image) * 8
     if capacity < len(binary):
         print("size over")
         return
@@ -87,7 +102,6 @@ def main():
     parser.add_argument("mode", help="encode or decode")
     parser.add_argument("-k", "--key")
     parser.add_argument("-i", "--image")
-    parser.add_argument("-s", "--size")
     parser.add_argument("-o", "--output")
     parser.add_argument("-d", "--data")
     args = parser.parse_args()
@@ -97,10 +111,10 @@ def main():
             return
         generate_key(args.image, args.data, args.output)
     elif args.mode == "decode":
-        if args.image == None or args.size == None or args.output == None or args.key == None:
+        if args.image == None or args.output == None or args.key == None:
             parser.print_help()
             return
-        decode(args.image, args.key, int(args.size), args.output)
+        decode(args.image, args.key, args.output)
     else:
         parser.print_help()
 
