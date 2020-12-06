@@ -12,3 +12,6 @@ decode
 ```bash
 parade decode -i <image FILE> -k <key FILE> -s <SIZE of secret data> -o <output data FILE>
 ```
+
+### License
+MIT License
