@@ -2,7 +2,10 @@
 parade is a encoder/decoder of data using image file.
 
 ### Getting Started
-
+install
+```bash
+pip install git+https://github.com/TakutoYoshikai/parade.git
+```
 encode
 ```bash
 parade encode -i <image FILE> -d <secret data FILE> -o <output key FILE>
