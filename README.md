@@ -1,5 +1,5 @@
 # parade
-parade is a encoder/decoder of data using image file.
+parade is a data encoder/decoder using image file.
 
 ### Getting Started
 **install**
