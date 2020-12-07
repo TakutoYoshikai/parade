@@ -4,6 +4,12 @@ import argparse
 
 DELIMETER = "#|#|#|#"
 
+class DifferentSizeError(Exception):
+    pass
+
+class SizeOverError(Exception):
+    pass
+
 def write_data(data, outputpath):
     f = open(outputpath, "wb")
     f.write(data)
@@ -22,7 +28,7 @@ def decode(imagepath, keypath, outputpath):
     width, height = image.size
     k_width, k_height = key_image.size
     if width * height != k_width * k_height:
-        print("size is different")
+        raise DifferentSizeError("size is different")
         return
     data_binary = ""
     buf = ""
@@ -60,6 +66,7 @@ def decode(imagepath, keypath, outputpath):
 def generate_key(imagepath, filepath, outputpath):
     f = open(filepath, "rb")
     data = f.read()
+    f.close()
     delimeter = DELIMETER.encode()
     binary_content = lina.message_to_binary(data)
     binary_delimeter = lina.message_to_binary(delimeter)
@@ -69,7 +76,7 @@ def generate_key(imagepath, filepath, outputpath):
     width, height = image.size
     capacity = capacity_of_image(image) * 8
     if capacity < len(binary):
-        print("size over")
+        raise SizeOverError("size over")
         return
     i = 0
     for row in range(height):
