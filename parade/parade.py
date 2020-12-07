@@ -21,36 +21,39 @@ def decode(imagepath, keypath, outputpath):
     delimeter = "".join(delimeter)
     width, height = image.size
     k_width, k_height = key_image.size
-    if width != k_width or height != k_height:
+    if width * height != k_width * k_height:
         print("size is different")
         return
     data_binary = ""
     buf = ""
-    for row in range(height):
-        for col in range(width):
-            pixel = image.getpixel((col, row))
-            key_pixel = key_image.getpixel((col, row))
-            if image.mode == "RGBA":
-                pixel = pixel[:3]
-            rgb = []
-            for i in range(3):
-                color = pixel[i]
-                k_color = key_pixel[i]
-                byte = lina.message_to_binary(color)
-                k_byte = lina.message_to_binary(k_color)
-                for j in range(8):
-                    if len(buf) == len(delimeter):
-                        buf = buf[1:len(delimeter)]
-                    if (byte[j] == "1" and k_byte[j] == "0") or (byte[j] == "0" and k_byte[j] == "1"):
-                        buf += "1"
-                        data_binary += "1"
-                    else:
-                        buf += "0"
-                        data_binary += "0"
-                if buf == delimeter:
-                    image.close()
-                    write_data(lina.cut_bytes(lina.split(data_binary)), outputpath)
-                    return
+    for pixel_i in range(width * height):
+        row = pixel_i // width 
+        col = pixel_i % width
+        k_row = pixel_i // k_width
+        k_col = pixel_i % k_width
+        pixel = image.getpixel((col, row))
+        key_pixel = key_image.getpixel((k_col, k_row))
+        if image.mode == "RGBA":
+            pixel = pixel[:3]
+        rgb = []
+        for i in range(3):
+            color = pixel[i]
+            k_color = key_pixel[i]
+            byte = lina.message_to_binary(color)
+            k_byte = lina.message_to_binary(k_color)
+            for j in range(8):
+                if len(buf) == len(delimeter):
+                    buf = buf[1:len(delimeter)]
+                if (byte[j] == "1" and k_byte[j] == "0") or (byte[j] == "0" and k_byte[j] == "1"):
+                    buf += "1"
+                    data_binary += "1"
+                else:
+                    buf += "0"
+                    data_binary += "0"
+            if buf == delimeter:
+                image.close()
+                write_data(lina.cut_bytes(lina.split(data_binary)), outputpath)
+                return
     image.close()
     write_data(lina.cut_bytes(lina.split(data_binary)), outputpath)
 
