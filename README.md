@@ -13,7 +13,7 @@ parade encode -i <image FILE> -d <secret data FILE> -o <output key FILE>
 
 **decode**
 ```bash
-parade decode -i <image FILE> -k <key FILE> -s <SIZE of secret data> -o <output data FILE>
+parade decode -i <image FILE> -k <key FILE> -o <output data FILE>
 ```
 
 ### License
