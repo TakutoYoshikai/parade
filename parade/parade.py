@@ -2,7 +2,7 @@ from lina import lina
 from PIL import Image
 import argparse
 
-DELIMETER = "#|#|#|#"
+DELIMETER = "#|#|#|#|#|"
 
 class DifferentSizeError(Exception):
     pass
