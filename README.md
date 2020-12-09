@@ -1,5 +1,5 @@
 # parade
-parade is a data encoder/decoder using image file.
+parade is a xor encryption program with image file
 
 ### Getting Started
 **install**
